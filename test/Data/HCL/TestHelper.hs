@@ -18,11 +18,11 @@ import           Text.Megaparsec.Char
 --     _ -> True `shouldBe` True
 
 testParser
-    :: (Eq a, Show e, Show a, Show (Token s))
+    :: (Eq a, Show e, Show a, Show s, Show (Token s))
     => Parsec e s a -> s -> a -> Expectation
 testParser p i o = case runParser p "" i of
-    Left e  -> error (show e)
-    Right a -> a `shouldBe` o
+    Left err -> error (show err)
+    Right a  -> a `shouldBe` o
 
 testFailure :: String -> Text -> Expectation
 testFailure fp inp = case parseHCL fp inp of

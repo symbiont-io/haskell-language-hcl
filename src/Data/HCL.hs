@@ -50,6 +50,7 @@ module Data.HCL
 
 import           Control.Monad
 import qualified Data.HashMap.Strict        as HashMap (fromList)
+import           Data.HCL.Types
 import           Data.Text                  (Text)
 import qualified Data.Text                  as Text
 import           Data.Text.Prettyprint.Doc  (Pretty)
@@ -58,16 +59,20 @@ import           Text.Megaparsec            (ParseError (..), Parsec, eof,
                                              label, lookAhead, many, manyTill,
                                              optional, runParser, sepBy, sepBy1,
                                              skipMany, some, try, (<|>))
-import           Text.Megaparsec.Char       (alphaNumChar, anyChar, char, eol,
-                                             spaceChar, tab)
+import           Text.Megaparsec            (MonadParsec, ParseErrorBundle,
+                                             satisfy, (<?>))
+import           Text.Megaparsec.Char       (alphaNumChar, char, eol, spaceChar,
+                                             tab)
 import qualified Text.Megaparsec.Char       as Megaparsec (string)
 import qualified Text.Megaparsec.Char.Lexer as Lexer
-
-import           Data.HCL.Types
-
+import           Text.Megaparsec.Stream     (Token)
 
 type Parser = Parsec Void Text
 
+-- | This parser succeeds for any character. Returns the parsed character.
+anyChar :: MonadParsec e s m => m (Token s)
+anyChar = satisfy (const True) <?> "character"
+{-# INLINE anyChar #-}
 
 
 -- |
@@ -85,7 +90,7 @@ hcl = many $ do
 
 -- |
 -- Shortcut for @runParser 'hcl'@
-parseHCL :: String -> Text -> Either (ParseError Char Void) HCLDoc
+parseHCL :: String -> Text -> Either (ParseErrorBundle Text Void) HCLDoc
 parseHCL = runParser hcl
 
 topValue :: Parser HCLStatement
